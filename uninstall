@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [ ! -d ~/.bash ]; then
+    echo "The dotfiles this expects to uninstall are not installed"
+    exit 1
+fi
+
+BACKUPDIR=~/.bash/backup
+if [ ! -d $BACKUPDIR ]; then
+    echo "Nothing to revert to, quitting, verify $BACKUPDIR exists"
+    exit 1
+else
+    if [ ! -f $BACKUPDIR/.bashrc ]; then
+        echo "Aborting no .bashrc found to revert to"
+        exit 1
+    fi
+fi
+
+# Remove the links created by running the install
+rm ~/.bashrc
+rm ~/.bash_profile
+
+# Mv the backup directory to /tmp
+TMPDIR="/tmp/bash_backup_${RANDOM}"
+cp $BACKUPDIR $TMPDIR
+
+# Remove the current ~/.bash folder
+rm -rf ~/.bash
+
+# Restore the files we had in the backup
+cp -r $TMPDIR/* ~/

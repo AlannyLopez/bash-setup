@@ -1,0 +1,211 @@
+#!/usr/bin/env bash
+# The .bashrc file is sourced every time you start a bash (bourne again) shell.
+
+# quiet will be set for you by subordinate functions.  Explicitly setting it to 1 here will override.
+# quiet=1
+
+# Helper Functions
+################################################################################
+# generate the color code for text color
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+function EXT_T_COLOR()
+{
+    echo -ne "\[\033[38;5;$1m\]"
+}
+
+# generate the color code for Highlight Color
+function EXT_H_COLOR ()
+{
+    echo -ne "\[\033[48;5;$1m\]"
+}
+
+# get current branch in git repo
+function parse_git_branch()
+{
+
+    BRANCH=`lgit branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+    if [ ! "${BRANCH}" == "" ]
+    then
+        STAT=`parse_git_dirty`
+        echo "-> [${BRANCH}${STAT}] "
+    else
+        echo ""
+    fi
+}
+
+# get current status of git repo
+function parse_git_dirty
+{
+    status=`lgit status 2>&1 | tee`
+    dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
+    untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
+    ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
+    newfile=`echo -n "${status}" 2> /dev/null | grep "new file:" &> /dev/null; echo "$?"`
+    renamed=`echo -n "${status}" 2> /dev/null | grep "renamed:" &> /dev/null; echo "$?"`
+    deleted=`echo -n "${status}" 2> /dev/null | grep "deleted:" &> /dev/null; echo "$?"`
+    bits=''
+    if [ "${renamed}" == "0" ]; then
+        bits=">${bits}"
+    fi
+    if [ "${ahead}" == "0" ]; then
+        bits="*${bits}"
+    fi
+    if [ "${newfile}" == "0" ]; then
+        bits="+${bits}"
+    fi
+    if [ "${untracked}" == "0" ]; then
+        bits="?${bits}"
+    fi
+    if [ "${deleted}" == "0" ]; then
+        bits="x${bits}"
+    fi
+    if [ "${dirty}" == "0" ]; then
+        bits="!${bits}"
+    fi
+    if [ ! "${bits}" == "" ]; then
+        echo " ${bits}"
+    else
+        echo ""
+    fi
+}
+
+################################################################################
+function bashrc_personal_settings
+{
+    # enable color support of ls
+    if [ -x ~/.bash/dircolors ]; then
+        test -r ~/.bash/dircolors && eval "$(dircolors -b ~/.bash/dircolors)" || eval "$(dircolors -b)"
+    else
+       export CLICOLOR=1
+       export LSCOLORS="Gxfxcxdxbxegedabagacad"
+    fi
+
+    # colored GCC warnings and errors
+    #export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+    # Aliases
+    if [ -f ~/.bash/aliases ]; then
+        . ~/.bash/aliases
+    fi
+
+    # enable programmable completion features (you don't need to enable
+    # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+    # sources /etc/bash.bashrc).
+    if ! shopt -oq posix; then
+        if [ -f /usr/share/bash-completion/bash_completion ]; then
+            . /usr/share/bash-completion/bash_completion
+        elif [ -f /etc/bash_completion ]; then
+            . /etc/bash_completion
+        fi
+    fi
+
+    # Func to gen PS1 after CMDs
+    export PROMPT_COMMAND=__prompt_command
+}
+
+################################################################################
+# Setup the Prompt Command, color codes for different machines and bash history
+# persistance
+################################################################################
+function __prompt_command()
+{
+    local err_history="$?"
+    PS1=""
+    local RCol='\[\e[0m\]'
+
+
+    # Color Coordinating Across Machines
+    # Defaults to light blue with gray text for any machine not named below
+    local n_c="`EXT_T_COLOR 8``EXT_H_COLOR 75`"
+    local host_name=""
+    if [ -x /usr/bin/hostname ]; then
+	    host_name="`/usr/bin/hostname -s`"
+    elif [ -x /bin/hostname ]; then
+	    host_name="`/bin/hostname -s`"
+    fi
+
+    host_color_codes
+
+    local name=" ${USER} on $host_name "
+    local d_c="`EXT_T_COLOR 28``EXT_H_COLOR 188`"
+
+    dir=" ${PWD} "
+    if [ "$(type -t lgit)" == "alias" ]; then
+        dir="$dir`parse_git_branch`"
+    fi
+    local e_c="`EXT_T_COLOR 0``EXT_H_COLOR 124`"
+    local err=""
+    if [ "$err_history" != 0 ]; then
+        err=" ${err_history} "
+    fi
+    local t_c="`EXT_T_COLOR 75``EXT_H_COLOR 8`"
+
+    PS1="${RCol}${n_c}${name}${d_c}${dir}${e_c}${err}${t_c} \d \@ ${RCol}\n>> "
+    log_bash_persistent_history
+}
+
+################################################################################
+function host_color_codes ()
+{
+    # Root is Set to Orange with white  text
+    if [ $UID == 0 ]; then
+        n_c="`EXT_T_COLOR 15``EXT_H_COLOR 88`"
+    # Fatcat will be a pink color with black text
+    elif [ "$host_name" == "fatcat" ]; then
+        n_c="`EXT_T_COLOR 0``EXT_H_COLOR 212`"
+    # Zazu is dark blue with white text
+    elif [ "$host_name" == "zazu" ]; then
+        n_c="`EXT_T_COLOR 15``EXT_H_COLOR 20`"
+    # Hoss is dark Green with white text
+    elif [ "$host_name" == "hoss" ]; then
+        n_c="`EXT_T_COLOR 15``EXT_H_COLOR 22`"
+    # Satellite is dark blue with gray text
+    elif [ "$host_name" == "Satellite" ]; then
+        n_c="`EXT_T_COLOR 15``EXT_H_COLOR 8`"
+    # Scar is Black with Red Text
+    elif [ "$host_name" == "scar" ]; then
+        n_c="`EXT_T_COLOR 1``EXT_H_COLOR 0`"
+    fi
+    return $1
+}
+
+################################################################################
+function log_bash_persistent_history()
+{
+    local date_part=$(date "+%Y-%m-%d.%H:%M:%S")
+    local command_part=$(history 1)
+    if [ "$command_part" != "$PERSISTENT_HISTORY_LAST" ]
+    then
+        echo "$date_part -- $command_part" >> ~/.bash/persistent
+        export PERSISTENT_HISTORY_LAST="$command_part"
+    fi
+}
+
+
+################################################################################
+function bashrc_main_function {
+
+    # ~/.bash/modules can have files added to it to override function of .bashrc
+    if [ -d "${HOME}/.bash/modules" ]; then
+        MODULES="${HOME}/.bash/modules/*"
+        for m in $MODULES
+        do
+            # Source in the module file.
+            if [ -f $m ] && [[ ! $m == *.md ]]; then
+                . $m
+            fi
+        done
+    fi
+    bashrc_personal_settings
+}
+################################################################################
+
+
+
+################################################################################
+# Main function
+
+bashrc_main_function
+
+################################################################################

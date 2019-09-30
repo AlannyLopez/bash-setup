@@ -1,0 +1,4 @@
+#!/bin/bash
+if [ -f ~/.bash/rc ]; then
+  . ~/.bash/rc
+fi

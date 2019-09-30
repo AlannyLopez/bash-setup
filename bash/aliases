@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# List the Aliases Describe in here
+alias aliases="cat ~/.bash/aliases | grep --color=never alias | sed -e 's/^[ \t]*//'"
+
+# Incompatible with AIX, sdo check if uname is AIX
+if [ "$(uname)" != "AIX" ]; then
+  alias grep='grep --color=auto'
+  alias fgrep='fgrep --color=auto'
+  alias egrep='egrep --color=auto'
+  alias ll='ls -alF'
+  alias la='ls -A'
+  alias l='ls -CF'
+fi
+
+# Linux Specific, make em purty
+if [ "$(uname)" == "Linux" ]; then
+    alias ls='ls --color=auto'
+fi
+
+# local git alias lgit, in case there is some git overwrite in any module
+if [ -f /usr/bin/git ]; then
+    alias lgit='/usr/bin/git'
+elif [ -f /usr/git ]; then
+    alias lgit='/usr/git'
+fi
+
+# Application Aliases
+# alias docker='podman'
+alias docps='docker ps'
+alias dirsz='du -hs .[^.]*'
+alias myip="ip -br -c a"
+
+# Commands that will always demand sudo any tiume they are run
+alias yum='sudo yum'
+alias apt-get='sudo apt-get'
+alias apt='sudo apt'
+alias dnf='sudo dnf'

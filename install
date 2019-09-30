@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+# We will make a temporary backup file in the parent directory
+BACKUPDIR="/tmp/backup_bash_${RANDOM}"
+if [ ! -d $BACKUPDIR ]; then
+    mkdir $BACKUPDIR
+fi
+
+# Save the state of the current files into backup directory
+ls -la ~/.bash* > $BACKUPDIR/backup_list.txt
+
+# Remove old files and store them if needed in backup, soft links are removed
+if [ -L ~/.bashrc ]; then
+    rm ~/.bashrc
+elif [ -f ~/.bashrc ]; then
+    mv ~/.bashrc $BACKUPDIR
+fi
+
+if [ -L ~/.bash_profile ]; then
+    rm ~/.bash_profile
+elif [ -f ~/.bashrc_profile ]; then
+    mv ~/.bash_profile $BACKUPDIR
+fi
+
+# Move any extra .bash files to backup directory
+mv ~/.bash* $BACKUPDIR
+
+# Copy over the bash directory
+cp -r $DIR/bash ~/.bash
+
+# Generate our links
+ln -s ~/.bash/rc ~/.bashrc
+ln -s ~/.bash/profile ~/.bash_profile
+
+# Place the backup into .bash
+mv $BACKUPDIR ~/.bash/backup
