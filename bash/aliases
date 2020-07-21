@@ -36,3 +36,7 @@ alias yum='sudo yum'
 alias apt-get='sudo apt-get'
 alias apt='sudo apt'
 alias dnf='sudo dnf'
+
+alias greper="cat ~/.bash/persistent | grep"
+alias catper="cat ~/.bash/persistent"
+alias taiper="tail -250 ~/.bash/persistent"

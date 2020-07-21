@@ -24,7 +24,7 @@ function EXT_H_COLOR ()
 function parse_git_branch()
 {
 
-    BRANCH=`lgit branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
+    BRANCH=`git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'`
     if [ ! "${BRANCH}" == "" ]
     then
         STAT=`parse_git_dirty`
@@ -37,7 +37,7 @@ function parse_git_branch()
 # get current status of git repo
 function parse_git_dirty
 {
-    status=`lgit status 2>&1 | tee`
+    status=`git status 2>&1 | tee`
     dirty=`echo -n "${status}" 2> /dev/null | grep "modified:" &> /dev/null; echo "$?"`
     untracked=`echo -n "${status}" 2> /dev/null | grep "Untracked files" &> /dev/null; echo "$?"`
     ahead=`echo -n "${status}" 2> /dev/null | grep "Your branch is ahead of" &> /dev/null; echo "$?"`
@@ -74,7 +74,7 @@ function parse_git_dirty
 function bashrc_personal_settings
 {
     # enable color support of ls
-    if [ -x ~/.bash/dircolors ]; then
+    if command -v dircolors && [ -x ~/.bash/dircolors ] ; then
         test -r ~/.bash/dircolors && eval "$(dircolors -b ~/.bash/dircolors)" || eval "$(dircolors -b)"
     else
        export CLICOLOR=1
@@ -120,9 +120,9 @@ function __prompt_command()
     local n_c="`EXT_T_COLOR 8``EXT_H_COLOR 75`"
     local host_name=""
     if [ -x /usr/bin/hostname ]; then
-	    host_name="`/usr/bin/hostname -s`"
+            host_name="`/usr/bin/hostname -s`"
     elif [ -x /bin/hostname ]; then
-	    host_name="`/bin/hostname -s`"
+            host_name="`/bin/hostname -s`"
     fi
 
     host_color_codes
@@ -131,7 +131,7 @@ function __prompt_command()
     local d_c="`EXT_T_COLOR 28``EXT_H_COLOR 188`"
 
     dir=" ${PWD} "
-    if [ "$(type -t lgit)" == "alias" ]; then
+    if [ "$(type -t git)" == "alias" ]; then
         dir="$dir`parse_git_branch`"
     fi
     local e_c="`EXT_T_COLOR 0``EXT_H_COLOR 124`"
@@ -187,7 +187,11 @@ function log_bash_persistent_history()
 function bashrc_main_function {
 
     # ~/.bash/modules can have files added to it to override function of .bashrc
-    if [ -d "${HOME}/.bash/modules" ]; then
+    if [ -d "${HOME}/.local/bin" ]; then
+        PATH=${PATH}:${HOME}/.local/bin
+    fi
+
+    if [ -d "${HOME}/.bash/modules" ] && [ ! -z "$PS1" ]; then
         MODULES="${HOME}/.bash/modules/*"
         for m in $MODULES
         do
