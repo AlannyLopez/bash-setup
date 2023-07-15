@@ -74,7 +74,7 @@ function parse_git_dirty
 function bashrc_personal_settings
 {
     # enable color support of ls
-    if command -v dircolors && [ -x ~/.bash/dircolors ] ; then
+    if [ -x ~/.bash/dircolors ] ; then
         test -r ~/.bash/dircolors && eval "$(dircolors -b ~/.bash/dircolors)" || eval "$(dircolors -b)"
     else
        export CLICOLOR=1
