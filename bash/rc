@@ -116,8 +116,8 @@ function __prompt_command()
 
 
     # Color Coordinating Across Machines
-    # Defaults to light blue with gray text for any machine not named below
-    local n_c="`EXT_T_COLOR 8``EXT_H_COLOR 75`"
+    # Defaults to Orange with white text for any machine not named below
+    local n_c="`EXT_T_COLOR 15``EXT_H_COLOR 208`"
     local host_name=""
     if [ -x /usr/bin/hostname ]; then
             host_name="`/usr/bin/hostname -s`"
@@ -148,24 +148,9 @@ function __prompt_command()
 ################################################################################
 function host_color_codes ()
 {
-    # Root is Set to Orange with white  text
+    # Root is Set to Red with white text
     if [ $UID == 0 ]; then
         n_c="`EXT_T_COLOR 15``EXT_H_COLOR 88`"
-    # Fatcat will be a pink color with black text
-    elif [ "$host_name" == "fatcat" ]; then
-        n_c="`EXT_T_COLOR 0``EXT_H_COLOR 212`"
-    # Zazu is dark blue with white text
-    elif [ "$host_name" == "zazu" ]; then
-        n_c="`EXT_T_COLOR 15``EXT_H_COLOR 20`"
-    # Hoss is dark Green with white text
-    elif [ "$host_name" == "hoss" ]; then
-        n_c="`EXT_T_COLOR 15``EXT_H_COLOR 22`"
-    # Satellite is dark blue with gray text
-    elif [ "$host_name" == "Satellite" ]; then
-        n_c="`EXT_T_COLOR 15``EXT_H_COLOR 8`"
-    # Scar is Black with Red Text
-    elif [ "$host_name" == "scar" ]; then
-        n_c="`EXT_T_COLOR 1``EXT_H_COLOR 0`"
     fi
     return $1
 }
