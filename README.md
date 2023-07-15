@@ -1,4 +1,4 @@
-# Dots files I have created for phyp usage.
+# Dots files I have created for personal usage.
 
 ### Setup
 
